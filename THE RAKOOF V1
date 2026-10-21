@@ -1,0 +1,683 @@
+-- Banana Hub V5.2 | Ultra Update + Givers ESP & Remotes 🍌🦈
+
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Lighting = game:GetService("Lighting")
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
+
+local LocalPlayer = Players.LocalPlayer
+local ParentGui = (pcall(function() return gethui() end) and gethui()) or CoreGui
+
+--------------------------------------------------------------------------------
+-- DRAGGABLE HELPER
+--------------------------------------------------------------------------------
+local function makeDraggable(guiFrame, dragHandle)
+    dragHandle = dragHandle or guiFrame
+    local dragging, dragInput, dragStart, startPos = false, nil, nil, nil
+    
+    dragHandle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = guiFrame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            end)
+        end
+    end)
+
+    dragHandle.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            guiFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+end
+
+--------------------------------------------------------------------------------
+-- KEYS & AUTHENTICATION SCREEN
+--------------------------------------------------------------------------------
+local ALLOWED_USER_ID = 9603761866
+local ALLOWED_USERNAME = "trebtrebalt3"
+
+local VALID_KEYS_LOOKUP = {
+    ["BANANA-KEY-Staff"] = true,
+    ["BANANA-KEY-A1B2"] = true, ["BANANA-KEY-C3D4"] = true, ["BANANA-KEY-E5F6"] = true,
+    ["BANANA-KEY-G7H8"] = true, ["BANANA-KEY-I9J0"] = true, ["BANANA-KEY-K1L2"] = true,
+    ["BANANA-KEY-M3N4"] = true, ["BANANA-KEY-O5P6"] = true, ["BANANA-KEY-Q7R8"] = true,
+    ["BANANA-KEY-S9T0"] = true, ["BANANA-KEY-U1V2"] = true, ["BANANA-KEY-W3X4"] = true,
+    ["BANANA-KEY-Y5Z6"] = true, ["BANANA-KEY-7890"] = true, ["BANANA-KEY-1122"] = true,
+    ["BANANA-KEY-3344"] = true, ["BANANA-KEY-5566"] = true, ["BANANA-KEY-7788"] = true,
+    ["BANANA-KEY-9900"] = true, ["BANANA-KEY-ABC1"] = true, ["BANANA-KEY-DEF2"] = true,
+    ["BANANA-KEY-GHI3"] = true, ["BANANA-KEY-JKL4"] = true, ["BANANA-KEY-MNO5"] = true,
+    ["BANANA-KEY-PQR6"] = true,
+}
+
+local isWhitelistedUser = (LocalPlayer.UserId == ALLOWED_USER_ID) or (LocalPlayer.Name:lower() == ALLOWED_USERNAME:lower())
+
+local LoadScreenGui = Instance.new("ScreenGui", ParentGui)
+LoadScreenGui.Name = "BananaHubLoading"
+LoadScreenGui.ResetOnSpawn = false
+LoadScreenGui.DisplayOrder = 999
+
+local LoadFrame = Instance.new("Frame", LoadScreenGui)
+LoadFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+LoadFrame.Size = UDim2.new(0, 440, 0, 280)
+LoadFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+LoadFrame.BackgroundColor3 = Color3.fromRGB(22, 20, 26)
+Instance.new("UICorner", LoadFrame).CornerRadius = UDim.new(0, 14)
+local LoadStroke = Instance.new("UIStroke", LoadFrame)
+LoadStroke.Thickness = 2.5
+LoadStroke.Color = Color3.fromRGB(255, 200, 0)
+
+makeDraggable(LoadFrame)
+
+local LoadTitle = Instance.new("TextLabel", LoadFrame)
+LoadTitle.Size = UDim2.new(1, 0, 0, 40)
+LoadTitle.Position = UDim2.new(0, 0, 0, 6)
+LoadTitle.BackgroundTransparency = 1
+LoadTitle.Text = "🍌 BANANA HUB V5.2 — AUTHENTICATION 🍌"
+LoadTitle.TextColor3 = Color3.fromRGB(255, 200, 0)
+LoadTitle.Font = Enum.Font.GothamBold
+LoadTitle.TextSize = 12
+
+local StatusLabel = Instance.new("TextLabel", LoadFrame)
+StatusLabel.Size = UDim2.new(1, 0, 0, 24)
+StatusLabel.Position = UDim2.new(0, 0, 0.33, 0)
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Text = "Enter Key..."
+StatusLabel.TextColor3 = Color3.fromRGB(240, 240, 240)
+StatusLabel.Font = Enum.Font.Gotham
+StatusLabel.TextSize = 11
+
+local KeyInputBox = Instance.new("TextBox", LoadFrame)
+KeyInputBox.Size = UDim2.new(0.88, 0, 0, 34)
+KeyInputBox.Position = UDim2.new(0.06, 0, 0.45, 0)
+KeyInputBox.BackgroundColor3 = Color3.fromRGB(30, 28, 38)
+KeyInputBox.PlaceholderText = "Enter Key..."
+KeyInputBox.Text = ""
+KeyInputBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+KeyInputBox.PlaceholderColor3 = Color3.fromRGB(160, 160, 180)
+KeyInputBox.Font = Enum.Font.GothamBold
+KeyInputBox.TextSize = 11
+KeyInputBox.ClearTextOnFocus = false
+Instance.new("UICorner", KeyInputBox).CornerRadius = UDim.new(0, 8)
+
+local SubmitKeyBtn = Instance.new("TextButton", LoadFrame)
+SubmitKeyBtn.Size = UDim2.new(0.88, 0, 0, 34)
+SubmitKeyBtn.Position = UDim2.new(0.06, 0, 0.76, 0)
+SubmitKeyBtn.BackgroundColor3 = Color3.fromRGB(220, 160, 0)
+SubmitKeyBtn.Text = "🚀 VERIFY KEY & LAUNCH"
+SubmitKeyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+SubmitKeyBtn.Font = Enum.Font.GothamBold
+SubmitKeyBtn.TextSize = 11
+Instance.new("UICorner", SubmitKeyBtn).CornerRadius = UDim.new(0, 8)
+
+local authenticated = false
+if isWhitelistedUser then
+    LoadScreenGui:Destroy()
+    authenticated = true
+else
+    SubmitKeyBtn.Activated:Connect(function()
+        if VALID_KEYS_LOOKUP[KeyInputBox.Text:gsub("%s+", "")] then
+            LoadScreenGui:Destroy()
+            authenticated = true
+        else
+            StatusLabel.TextColor3 = Color3.fromRGB(255, 60, 60)
+            StatusLabel.Text = "❌ INVALID KEY!"
+        end
+    end)
+    repeat task.wait(0.1) until authenticated
+end
+
+--------------------------------------------------------------------------------
+-- MAIN HUB CLEANUP & SETUP
+--------------------------------------------------------------------------------
+if getgenv().BananaHubCleanup then pcall(getgenv().BananaHubCleanup) end
+
+local Features = {
+    Fly = false, InfJump = false, FullBright = false, MaxStamina = false,
+    BroMaxLuck = false, AutoAttack = false, BringBoss = false, ExpandHitbox = false, 
+    AutoPickup = false, TriggerBot = false, Luck250 = false, Luck1000 = false,
+    GhostWalk = false, AutoInteract = false, AutoMiscSouls = false, AutoFarmRake = false, 
+    GodMode = false, PlayerESP = false, RakeESP = false, GiversESP = false, InfReach = false, AIBattle = false,
+    BringImmuneAllys = false, AutoCandyTP = false
+}
+
+local Connections, Tasks = {}, {}
+local OrigLighting = {Ambient = Lighting.Ambient, Brightness = Lighting.Brightness, ClockTime = Lighting.ClockTime, GlobalShadows = Lighting.GlobalShadows}
+
+getgenv().BananaHubCleanup = function()
+    for _, conn in pairs(Connections) do if conn then conn:Disconnect() end end
+    for _, taskRef in pairs(Tasks) do if taskRef then pcall(task.cancel, taskRef) end end
+    table.clear(Connections); table.clear(Tasks)
+    if Features.FullBright then
+        Lighting.Ambient = OrigLighting.Ambient
+        Lighting.Brightness = OrigLighting.Brightness
+        Lighting.ClockTime = OrigLighting.ClockTime
+        Lighting.GlobalShadows = OrigLighting.GlobalShadows
+    end
+    if ParentGui:FindFirstChild("BananaHubMainGui") then ParentGui.BananaHubMainGui:Destroy() end
+    if ParentGui:FindFirstChild("BananaHubPlayerHPGui") then ParentGui.BananaHubPlayerHPGui:Destroy() end
+end
+
+local OFF_GRAD = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromRGB(45, 40, 25)), ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 25, 15))})
+local ON_GRAD  = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 180, 0)), ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 120, 0))})
+
+local function safeBindClick(btn, cb) btn.Activated:Connect(function() pcall(cb) end) end
+
+local function findTheRakeModel()
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        if obj:IsA("Model") and (obj.Name == "THE_RAKE" or obj.Name:lower():find("rake") or obj.Name:lower():find("rakoof")) then
+            local p = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Head") or obj:FindFirstChildWhichIsA("BasePart")
+            if p then return obj, p end
+        end
+    end
+    return nil, nil
+end
+
+-- Remote Search Helper from Screenshot 2 & 3
+local function findRemote(name)
+    for _, obj in ipairs(game:GetDescendants()) do
+        if (obj:IsA("RemoteEvent") or obj:IsA("UnreliableRemoteEvent")) and obj.Name == name then
+            return obj
+        end
+    end
+    return nil
+end
+
+--------------------------------------------------------------------------------
+-- MAIN GUI SETUP
+--------------------------------------------------------------------------------
+local ScreenGui = Instance.new("ScreenGui", ParentGui)
+ScreenGui.Name = "BananaHubMainGui"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.DisplayOrder = 100
+
+local ToggleIcon = Instance.new("TextButton", ScreenGui)
+ToggleIcon.Size = UDim2.new(0, 48, 0, 48)
+ToggleIcon.Position = UDim2.new(0, 15, 0.3, 0)
+ToggleIcon.BackgroundColor3 = Color3.fromRGB(35, 30, 20)
+ToggleIcon.Text = "🍌"
+ToggleIcon.TextSize = 24
+ToggleIcon.ZIndex = 200
+ToggleIcon.Active = true
+Instance.new("UICorner", ToggleIcon).CornerRadius = UDim.new(0, 12)
+Instance.new("UIStroke", ToggleIcon).Color = Color3.fromRGB(255, 200, 0)
+makeDraggable(ToggleIcon)
+
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+MainFrame.Size = UDim2.new(0, 600, 0, 480)
+MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(22, 20, 26)
+MainFrame.ClipsDescendants = false
+MainFrame.Active = true
+MainFrame.ZIndex = 10
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 14)
+Instance.new("UIStroke", MainFrame).Color = Color3.fromRGB(255, 200, 0)
+makeDraggable(MainFrame)
+
+Connections.KeybindToggle = UserInputService.InputBegan:Connect(function(input, gpe)
+    if not gpe and input.KeyCode == Enum.KeyCode.RightControl then
+        MainFrame.Visible = not MainFrame.Visible
+    end
+end)
+
+local TitleBar = Instance.new("Frame", MainFrame)
+TitleBar.Size = UDim2.new(1, 0, 0, 40)
+TitleBar.BackgroundColor3 = Color3.fromRGB(35, 30, 22)
+TitleBar.ZIndex = 11
+Instance.new("UICorner", TitleBar).CornerRadius = UDim.new(0, 14)
+
+local TitleText = Instance.new("TextLabel", TitleBar)
+TitleText.Size = UDim2.new(0.7, 0, 1, 0); TitleText.Position = UDim2.new(0, 14, 0, 0)
+TitleText.BackgroundTransparency = 1; TitleText.Text = "🍌 BANANA HUB V5.2 (Right Ctrl to Hide)"
+TitleText.TextColor3 = Color3.fromRGB(255, 220, 50); TitleText.Font = Enum.Font.GothamBold; TitleText.TextSize = 11
+TitleText.ZIndex = 12
+
+local CloseBtn = Instance.new("TextButton", TitleBar)
+CloseBtn.Size = UDim2.new(0, 26, 0, 26); CloseBtn.Position = UDim2.new(1, -34, 0.5, -13)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50); CloseBtn.Text = "X"; CloseBtn.TextColor3 = Color3.new(1,1,1)
+CloseBtn.ZIndex = 12
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
+
+safeBindClick(CloseBtn, function() MainFrame.Visible = false end)
+safeBindClick(ToggleIcon, function() MainFrame.Visible = not MainFrame.Visible end)
+
+--------------------------------------------------------------------------------
+-- BOSS MODE STARTER PANEL
+--------------------------------------------------------------------------------
+local ModeFrame = Instance.new("Frame", MainFrame)
+ModeFrame.Size = UDim2.new(0.95, 0, 0, 68)
+ModeFrame.Position = UDim2.new(0.025, 0, 0.10, 0)
+ModeFrame.BackgroundColor3 = Color3.fromRGB(32, 28, 38)
+ModeFrame.ZIndex = 11
+Instance.new("UICorner", ModeFrame).CornerRadius = UDim.new(0, 8)
+Instance.new("UIStroke", ModeFrame).Color = Color3.fromRGB(255, 200, 0)
+
+local ModeLabel = Instance.new("TextLabel", ModeFrame)
+ModeLabel.Size = UDim2.new(1, -10, 0, 18); ModeLabel.Position = UDim2.new(0, 8, 0, 4)
+ModeLabel.BackgroundTransparency = 1; ModeLabel.Text = "⚡ BOSS MODE STARTER (Type Script Name):"
+ModeLabel.TextColor3 = Color3.fromRGB(255, 200, 0); ModeLabel.Font = Enum.Font.GothamBold; ModeLabel.TextSize = 10
+ModeLabel.TextXAlignment = Enum.TextXAlignment.Left; ModeLabel.ZIndex = 12
+
+local ModeBox = Instance.new("TextBox", ModeFrame)
+ModeBox.Size = UDim2.new(0.60, 0, 0, 30); ModeBox.Position = UDim2.new(0.02, 0, 0.44, 0)
+ModeBox.BackgroundColor3 = Color3.fromRGB(22, 20, 26); ModeBox.PlaceholderText = "MainBloodHour"
+ModeBox.Text = "MainBloodHour"; ModeBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+ModeBox.Font = Enum.Font.GothamBold; ModeBox.TextSize = 10; ModeBox.ZIndex = 12
+Instance.new("UICorner", ModeBox).CornerRadius = UDim.new(0, 6)
+
+local StartModeBtn = Instance.new("TextButton", ModeFrame)
+StartModeBtn.Size = UDim2.new(0.34, 0, 0, 30); StartModeBtn.Position = UDim2.new(0.64, 0, 0.44, 0)
+StartModeBtn.BackgroundColor3 = Color3.fromRGB(220, 160, 0); StartModeBtn.Text = "▶️ START MODE"
+StartModeBtn.TextColor3 = Color3.fromRGB(255, 255, 255); StartModeBtn.Font = Enum.Font.GothamBold
+StartModeBtn.TextSize = 10; StartModeBtn.ZIndex = 12
+Instance.new("UICorner", StartModeBtn).CornerRadius = UDim.new(0, 6)
+
+safeBindClick(StartModeBtn, function()
+    local target = ModeBox.Text:gsub("%s+", "")
+    if target ~= "" then
+        local found = false
+        for _, obj in ipairs(Workspace:GetDescendants()) do
+            if obj.Name == target then
+                found = true
+                pcall(function()
+                    if obj:IsA("Script") or obj:IsA("LocalScript") then
+                        obj.Disabled = true
+                        task.wait(0.05)
+                        obj.Disabled = false
+                    end
+                end)
+            end
+        end
+        StartModeBtn.Text = found and "✅ STARTED!" or "❌ NOT FOUND"
+        task.delay(1.5, function() StartModeBtn.Text = "▶️ START MODE" end)
+    end
+end)
+
+--------------------------------------------------------------------------------
+-- SCROLLING MODULE GRID
+--------------------------------------------------------------------------------
+local ScrollingFrame = Instance.new("ScrollingFrame", MainFrame)
+ScrollingFrame.Size = UDim2.new(0.95, 0, 0.65, 0)
+ScrollingFrame.Position = UDim2.new(0.025, 0, 0.30, 0)
+ScrollingFrame.BackgroundTransparency = 1; ScrollingFrame.ScrollBarThickness = 5
+ScrollingFrame.ZIndex = 11
+
+local UIGrid = Instance.new("UIGridLayout", ScrollingFrame)
+UIGrid.CellSize = UDim2.new(0.48, 0, 0, 36); UIGrid.CellPadding = UDim2.new(0.03, 0, 0, 8)
+UIGrid:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, UIGrid.AbsoluteContentSize.Y + 20)
+end)
+
+local function CreateBtn(text, order)
+    local btn = Instance.new("TextButton", ScrollingFrame)
+    btn.BackgroundColor3 = Color3.fromRGB(35, 32, 22); btn.Text = text; btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.GothamBold; btn.TextSize = 10; btn.LayoutOrder = order; btn.ZIndex = 12
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    local grad = Instance.new("UIGradient", btn); grad.Color = OFF_GRAD; grad.Rotation = 90
+    local stroke = Instance.new("UIStroke", btn); stroke.Thickness = 1; stroke.Color = Color3.fromRGB(100, 90, 70)
+    return btn, stroke, grad
+end
+
+--------------------------------------------------------------------------------
+-- HEALTH GUI
+--------------------------------------------------------------------------------
+local HealthGui = Instance.new("ScreenGui", ParentGui)
+HealthGui.Name = "BananaHubPlayerHPGui"
+local HealthFrame = Instance.new("Frame", HealthGui)
+HealthFrame.Size = UDim2.new(0, 180, 0, 40); HealthFrame.Position = UDim2.new(0.02, 0, 0.25, 0)
+HealthFrame.BackgroundColor3 = Color3.fromRGB(22, 20, 26); makeDraggable(HealthFrame)
+Instance.new("UICorner", HealthFrame); Instance.new("UIStroke", HealthFrame).Color = Color3.fromRGB(255, 200, 0)
+
+local HPText = Instance.new("TextLabel", HealthFrame)
+HPText.Size = UDim2.new(1, 0, 1, 0); HPText.BackgroundTransparency = 1
+HPText.TextColor3 = Color3.fromRGB(255, 255, 255); HPText.Font = Enum.Font.GothamBold; HPText.TextSize = 10
+
+Connections.HPTracker = RunService.Heartbeat:Connect(function()
+    local char = LocalPlayer.Character
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    if hum then
+        HPText.Text = string.format("💚 HP: %d / %d", math.floor(hum.Health), math.floor(hum.MaxHealth))
+    end
+end)
+
+--------------------------------------------------------------------------------
+-- MODULE BUTTONS & LOGIC
+--------------------------------------------------------------------------------
+local AIBattleBtn, AIBattleS, AIBattleG = CreateBtn("⚔️ Battle AI Orbit: OFF", 1)
+local BringSpawnablesBtn, SpawnS, SpawnG = CreateBtn("🎯 ImmuneAllys -> Rake: OFF", 2)
+local CandyTpBtn, CandyS, CandyG = CreateBtn("🌀 Bring Candy To Me: OFF", 3)
+local MiscSoulsBtn, MiscSS, MiscSG = CreateBtn("👻 Soul Farm: OFF", 4)
+local FlyBtn, FlyS, FlyG = CreateBtn("🦅 Fly Hack: OFF", 5)
+local InfJumpBtn, InfJS, InfJG = CreateBtn("🦘 Inf Jump Loop: OFF", 6)
+local BrightBtn, BrightS, BrightG = CreateBtn("💡 Full Bright: OFF", 7)
+local StaminaBtn, StamS, StamG = CreateBtn("⚡ Max Stamina (RE): OFF", 8)
+local GodModeBtn, GodS, GodG = CreateBtn("🛡️ Heal Loop (RE): OFF", 9)
+local HitboxBtn, HitboxS, HitboxG = CreateBtn("📦 Expand Hitbox: OFF", 10)
+local InfReachBtn, ReachS, ReachG = CreateBtn("📏 INF REACH: OFF", 11)
+local AttackBtn, AttS, AttG = CreateBtn("⚔️ Fast Spam Clicker: OFF", 12)
+local TrigBtn, TrigS, TrigG = CreateBtn("🎯 Trigger Bot: OFF", 13)
+local AutoPickupBtn, AutoPickupS, AutoPickupG = CreateBtn("🌀 Auto Pick-Up (Drops): OFF", 14)
+local GiversESPBtn, GiversS, GiversG = CreateBtn("🍔 GIVERS ESP: OFF", 15)
+local ESPBtn, ESPS, ESPG = CreateBtn("🚨 THE_RAKE ESP: OFF", 16)
+local PlayerESPBtn, PESPS, PESPG = CreateBtn("👁️ Player ESP: OFF", 17)
+local AutoFarmBtn, FarmS, FarmG = CreateBtn("👹 Auto Farm Head: OFF", 18)
+local GhostWalkBtn, GhostS, GhostG = CreateBtn("👻 Ghost Walk: OFF", 19)
+local InteractBtn, IntS, IntG = CreateBtn("🦇 Instant Interact: OFF", 20)
+local BringBossBtn, BringS, BringG = CreateBtn("🧲 Bring Boss: OFF", 21)
+
+-- 1. Battle AI Orbit
+local angle = 0
+safeBindClick(AIBattleBtn, function()
+    Features.AIBattle = not Features.AIBattle
+    AIBattleBtn.Text = Features.AIBattle and "⚔️ Battle AI Orbit: ON" or "⚔️ Battle AI Orbit: OFF"
+    AIBattleG.Color = Features.AIBattle and ON_GRAD or OFF_GRAD
+end)
+Connections.AIBattleLoop = RunService.RenderStepped:Connect(function(dt)
+    if Features.AIBattle then
+        local char = LocalPlayer.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        local _, rakePart = findTheRakeModel()
+        if hrp and rakePart then
+            angle = angle + (dt * 5)
+            local radius = 8
+            local offsetX = math.cos(angle) * radius
+            local offsetZ = math.sin(angle) * radius
+            hrp.CFrame = CFrame.new(rakePart.Position + Vector3.new(offsetX, 3, offsetZ), rakePart.Position)
+            local tool = char:FindFirstChildOfClass("Tool")
+            if tool then pcall(function() tool:Activate() end) end
+        end
+    end
+end)
+
+-- 2. ImmuneAllys -> The_Rake
+safeBindClick(BringSpawnablesBtn, function()
+    Features.BringImmuneAllys = not Features.BringImmuneAllys
+    BringSpawnablesBtn.Text = Features.BringImmuneAllys and "🎯 ImmuneAllys -> Rake: ON" or "🎯 ImmuneAllys -> Rake: OFF"
+    SpawnG.Color = Features.BringImmuneAllys and ON_GRAD or OFF_GRAD
+end)
+Connections.ImmuneAllysLoop = RunService.Heartbeat:Connect(function()
+    if Features.BringImmuneAllys then
+        local _, rakePart = findTheRakeModel()
+        if rakePart then
+            local immuneFolder = Workspace:FindFirstChild("ImmuneAllys") or Workspace:FindFirstChild("immuneallys")
+            if immuneFolder then
+                for _, obj in ipairs(immuneFolder:GetDescendants()) do
+                    if obj:IsA("Model") or obj:IsA("Tool") then
+                        local mainPart = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+                        if mainPart then
+                            pcall(function()
+                                if obj:IsA("Model") and obj.PrimaryPart then
+                                    obj:SetPrimaryPartCFrame(rakePart.CFrame)
+                                else
+                                    mainPart.CFrame = rakePart.CFrame
+                                end
+                            end)
+                        end
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- 3. GIVERS ESP (Burger, Chips, Coffee, Coin, Fish, Flare, Nokia, Pan, Slushie, Taco)
+safeBindClick(GiversESPBtn, function()
+    Features.GiversESP = not Features.GiversESP
+    GiversESPBtn.Text = Features.GiversESP and "🍔 GIVERS ESP: ON" or "🍔 GIVERS ESP: OFF"
+    GiversG.Color = Features.GiversESP and ON_GRAD or OFF_GRAD
+end)
+
+Tasks.GiversESPTask = task.spawn(function()
+    while true do
+        if Features.GiversESP then
+            pcall(function()
+                local giversFolder = Workspace:FindFirstChild("Givers")
+                if giversFolder then
+                    for _, giver in ipairs(giversFolder:GetChildren()) do
+                        local hl = giver:FindFirstChild("BananaGiverESP")
+                        if not hl then
+                            hl = Instance.new("Highlight", giver)
+                            hl.Name = "BananaGiverESP"
+                            hl.FillColor = Color3.fromRGB(255, 200, 0)
+                            hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+                        end
+                    end
+                end
+            end)
+            task.wait(1)
+        else
+            pcall(function()
+                local giversFolder = Workspace:FindFirstChild("Givers")
+                if giversFolder then
+                    for _, giver in ipairs(giversFolder:GetChildren()) do
+                        local hl = giver:FindFirstChild("BananaGiverESP")
+                        if hl then hl:Destroy() end
+                    end
+                end
+            end)
+            task.wait(1)
+        end
+    end
+end)
+
+-- 4. Max Stamina using ChangeStamina RemoteEvent
+safeBindClick(StaminaBtn, function()
+    Features.MaxStamina = not Features.MaxStamina
+    StaminaBtn.Text = Features.MaxStamina and "⚡ Max Stamina (RE): ON" or "⚡ Max Stamina (RE): OFF"
+    StamG.Color = Features.MaxStamina and ON_GRAD or OFF_GRAD
+end)
+Tasks.StaminaTask = task.spawn(function()
+    while true do
+        if Features.MaxStamina then
+            local changeStaminaRE = findRemote("ChangeStamina")
+            if changeStaminaRE then
+                pcall(function() changeStaminaRE:FireServer(100, 100) end)
+            end
+            task.wait(0.2)
+        else
+            task.wait(0.5)
+        end
+    end
+end)
+
+-- 5. Heal Loop using HealPlayer RemoteEvent
+safeBindClick(GodModeBtn, function()
+    Features.GodMode = not Features.GodMode
+    GodModeBtn.Text = Features.GodMode and "🛡️ Heal Loop (RE): ON" or "🛡️ Heal Loop (RE): OFF"
+    GodG.Color = Features.GodMode and ON_GRAD or OFF_GRAD
+end)
+Tasks.GodModeTask = task.spawn(function()
+    while true do
+        if Features.GodMode then
+            local healRE = findRemote("HealPlayer")
+            if healRE then
+                pcall(function() healRE:FireServer(LocalPlayer, 100) end)
+            end
+            task.wait(0.2)
+        else
+            task.wait(0.5)
+        end
+    end
+end)
+
+-- Fly Hack
+local bodyVel, bodyGyro
+safeBindClick(FlyBtn, function()
+    Features.Fly = not Features.Fly
+    FlyBtn.Text = Features.Fly and "🦅 Fly Hack: ON" or "🦅 Fly Hack: OFF"
+    FlyG.Color = Features.Fly and ON_GRAD or OFF_GRAD
+    if Connections.FlyConn then Connections.FlyConn:Disconnect() Connections.FlyConn = nil end
+    if bodyVel then bodyVel:Destroy() bodyVel = nil end
+    if bodyGyro then bodyGyro:Destroy() bodyGyro = nil end
+    if Features.Fly then
+        local char = LocalPlayer.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            bodyVel = Instance.new("BodyVelocity", hrp); bodyVel.MaxForce = Vector3.new(1,1,1)*1e6; bodyVel.Velocity = Vector3.zero
+            bodyGyro = Instance.new("BodyGyro", hrp); bodyGyro.MaxTorque = Vector3.new(1,1,1)*1e6; bodyGyro.CFrame = hrp.CFrame
+            Connections.FlyConn = RunService.RenderStepped:Connect(function()
+                if not Features.Fly or not hrp then return end
+                local cam = Workspace.CurrentCamera.CFrame
+                bodyGyro.CFrame = cam
+                local dir = Vector3.zero
+                if UserInputService:IsKeyDown(Enum.KeyCode.W) then dir = dir + cam.LookVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.S) then dir = dir - cam.LookVector end
+                bodyVel.Velocity = (dir.Magnitude > 0) and (dir.Unit * 50) or Vector3.zero
+            end)
+        end
+    end
+end)
+
+-- Inf Jump
+safeBindClick(InfJumpBtn, function()
+    Features.InfJump = not Features.InfJump
+    InfJumpBtn.Text = Features.InfJump and "🦘 Inf Jump: ON" or "🦘 Inf Jump Loop: OFF"
+    InfJG.Color = Features.InfJump and ON_GRAD or OFF_GRAD
+    if Connections.InfJumpConn then Connections.InfJumpConn:Disconnect() Connections.InfJumpConn = nil end
+    if Features.InfJump then
+        Connections.InfJumpConn = UserInputService.JumpRequest:Connect(function()
+            local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+            if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
+        end)
+    end
+end)
+
+-- Full Bright
+safeBindClick(BrightBtn, function()
+    Features.FullBright = not Features.FullBright
+    BrightBtn.Text = Features.FullBright and "💡 Full Bright: ON" or "💡 Full Bright: OFF"
+    BrightG.Color = Features.FullBright and ON_GRAD or OFF_GRAD
+    if Features.FullBright then
+        Lighting.Ambient = Color3.new(1,1,1); Lighting.Brightness = 2; Lighting.ClockTime = 14; Lighting.GlobalShadows = false
+    else
+        Lighting.Ambient = OrigLighting.Ambient; Lighting.Brightness = OrigLighting.Brightness; Lighting.ClockTime = OrigLighting.ClockTime; Lighting.GlobalShadows = OrigLighting.GlobalShadows
+    end
+end)
+
+-- Hitbox Expander
+safeBindClick(HitboxBtn, function()
+    Features.ExpandHitbox = not Features.ExpandHitbox
+    HitboxBtn.Text = Features.ExpandHitbox and "📦 Hitbox: ON" or "📦 Expand Hitbox: OFF"
+    HitboxG.Color = Features.ExpandHitbox and ON_GRAD or OFF_GRAD
+end)
+Connections.HitboxLoop = RunService.RenderStepped:Connect(function()
+    if Features.ExpandHitbox then
+        local rakeModel, _ = findTheRakeModel()
+        if rakeModel then
+            for _, p in ipairs(rakeModel:GetDescendants()) do
+                if p:IsA("BasePart") then p.Size = Vector3.new(25, 25, 25) p.Transparency = 0.5 end
+            end
+        end
+    end
+end)
+
+-- Lag-Free Auto Pick-Up
+safeBindClick(AutoPickupBtn, function()
+    Features.AutoPickup = not Features.AutoPickup
+    AutoPickupBtn.Text = Features.AutoPickup and "🌀 Auto Pick-Up (Drops): ON" or "🌀 Auto Pick-Up (Drops): OFF"
+    AutoPickupG.Color = Features.AutoPickup and ON_GRAD or OFF_GRAD
+end)
+Tasks.AutoPickupTask = task.spawn(function()
+    while true do
+        if Features.AutoPickup then
+            pcall(function()
+                local char = LocalPlayer.Character
+                local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    local dropsFolder = Workspace:FindFirstChild("Drops") or Workspace:FindFirstChild("drops")
+                    if dropsFolder then
+                        for _, obj in ipairs(dropsFolder:GetDescendants()) do
+                            if obj:IsA("BasePart") and typeof(firetouchinterest) == "function" then
+                                firetouchinterest(hrp, obj, 0)
+                                firetouchinterest(hrp, obj, 1)
+                            elseif obj:IsA("ProximityPrompt") then
+                                fireproximityprompt(obj)
+                            end
+                        end
+                    end
+                end
+            end)
+            task.wait(0.2)
+        else
+            task.wait(0.5)
+        end
+    end
+end)
+
+-- THE_RAKE ESP
+safeBindClick(ESPBtn, function()
+    Features.RakeESP = not Features.RakeESP
+    ESPBtn.Text = Features.RakeESP and "🚨 RAKE ESP: ON" or "🚨 THE_RAKE ESP: OFF"
+    ESPG.Color = Features.RakeESP and ON_GRAD or OFF_GRAD
+end)
+Connections.ESPLoop = RunService.RenderStepped:Connect(function()
+    local rakeModel, _ = findTheRakeModel()
+    if rakeModel then
+        local hl = rakeModel:FindFirstChild("BananaRakeESP")
+        if Features.RakeESP and not hl then
+            hl = Instance.new("Highlight", rakeModel); hl.Name = "BananaRakeESP"
+            hl.FillColor = Color3.fromRGB(255, 0, 0)
+        elseif not Features.RakeESP and hl then
+            hl:Destroy()
+        end
+    end
+end)
+
+-- Player ESP
+safeBindClick(PlayerESPBtn, function()
+    Features.PlayerESP = not Features.PlayerESP
+    PlayerESPBtn.Text = Features.PlayerESP and "👁️ Player ESP: ON" or "👁️ Player ESP: OFF"
+    PESPG.Color = Features.PlayerESP and ON_GRAD or OFF_GRAD
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and p.Character then
+            local hl = p.Character:FindFirstChild("BananaPlayerESP")
+            if Features.PlayerESP and not hl then
+                hl = Instance.new("Highlight", p.Character); hl.Name = "BananaPlayerESP"
+                hl.FillColor = Color3.fromRGB(0, 255, 200)
+            elseif not Features.PlayerESP and hl then
+                hl:Destroy()
+            end
+        end
+    end
+end)
+
+-- Fast Spam Clicker
+safeBindClick(AttackBtn, function()
+    Features.AutoAttack = not Features.AutoAttack
+    AttackBtn.Text = Features.AutoAttack and "⚔️ Spam Clicker: ON" or "⚔️ Fast Spam Clicker: OFF"
+    AttG.Color = Features.AutoAttack and ON_GRAD or OFF_GRAD
+end)
+Connections.AttackLoop = RunService.RenderStepped:Connect(function()
+    if Features.AutoAttack then
+        local tool = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Tool")
+        if tool then pcall(function() tool:Activate() end) end
+    end
+end)
+
+-- Bring Boss
+safeBindClick(BringBossBtn, function()
+    Features.BringBoss = not Features.BringBoss
+    BringBossBtn.Text = Features.BringBoss and "🧲 Bring Boss: ON" or "🧲 Bring Boss: OFF"
+    BringG.Color = Features.BringBoss and ON_GRAD or OFF_GRAD
+end)
+Connections.BringLoop = RunService.Heartbeat:Connect(function()
+    if Features.BringBoss then
+        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local _, targetPart = findTheRakeModel()
+        if hrp and targetPart then targetPart.CFrame = hrp.CFrame * CFrame.new(0, 0, -3) end
+    end
+end)
