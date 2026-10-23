@@ -1,9 +1,10 @@
--- THE RAKOOF V1 - Givers ESP, Teleport Givers, Noclip, Anti-Teleport & Draggable GUI Toggle (Fixed)
+-- THE RAKOOF V1 - Givers ESP, Nametags, Teleports & Extras
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
 
 local LocalPlayer = Players.LocalPlayer
 local ParentGui = (pcall(function() return gethui() end) and gethui()) or CoreGui
@@ -30,10 +31,10 @@ local ToggleStroke = Instance.new("UIStroke", ToggleBtn)
 ToggleStroke.Thickness = 2
 ToggleStroke.Color = Color3.fromRGB(255, 170, 0)
 
--- Main Frame
+-- Main Frame (Expanded to fit new features)
 local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-MainFrame.Size = UDim2.new(0, 360, 0, 315)
+MainFrame.Size = UDim2.new(0, 370, 0, 370)
 MainFrame.Position = UDim2.new(0.5, 0, 0.4, 0)
 MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
 MainFrame.Active = false
@@ -72,9 +73,9 @@ makeDraggable(ToggleBtn, ToggleBtn)
 
 -- Title Bar (Drag handle for Main Frame)
 local TitleBar = Instance.new("TextLabel", MainFrame)
-TitleBar.Size = UDim2.new(1, 0, 0, 38)
+TitleBar.Size = UDim2.new(1, 0, 0, 36)
 TitleBar.BackgroundColor3 = Color3.fromRGB(28, 28, 38)
-TitleBar.Text = "📦 RAKOOF HUB - GIVERS & PROTECTIONS"
+TitleBar.Text = "📦 RAKOOF HUB - GIVERS & EXTRAS"
 TitleBar.TextColor3 = Color3.fromRGB(255, 200, 50)
 TitleBar.Font = Enum.Font.GothamBold
 TitleBar.TextSize = 11
@@ -88,10 +89,10 @@ ToggleBtn.Activated:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
 end)
 
--- Close Button (Minimizes to Toggle Icon)
+-- Close Button
 local CloseBtn = Instance.new("TextButton", MainFrame)
 CloseBtn.Size = UDim2.new(0, 24, 0, 24)
-CloseBtn.Position = UDim2.new(1, -30, 0, 7)
+CloseBtn.Position = UDim2.new(1, -30, 0, 6)
 CloseBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
 CloseBtn.Text = "X"
 CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -102,57 +103,31 @@ CloseBtn.Activated:Connect(function()
     MainFrame.Visible = false
 end)
 
--- ESP Toggle Button
-local ESPBtn = Instance.new("TextButton", MainFrame)
-ESPBtn.Size = UDim2.new(0.88, 0, 0, 38)
-ESPBtn.Position = UDim2.new(0.06, 0, 0, 50)
-ESPBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-ESPBtn.Text = "🍔 GIVERS ESP: OFF"
-ESPBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
-ESPBtn.Font = Enum.Font.GothamBold
-ESPBtn.TextSize = 11
-Instance.new("UICorner", ESPBtn).CornerRadius = UDim.new(0, 8)
-local ESPStroke = Instance.new("UIStroke", ESPBtn)
-ESPStroke.Color = Color3.fromRGB(80, 80, 100)
+-- Helper to create buttons cleanly
+local function createButton(name, text, yPos)
+    local btn = Instance.new("TextButton", MainFrame)
+    btn.Name = name
+    btn.Size = UDim2.new(0.88, 0, 0, 34)
+    btn.Position = UDim2.new(0.06, 0, 0, yPos)
+    btn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    btn.Text = text
+    btn.TextColor3 = Color3.fromRGB(200, 200, 200)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 11
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    local stroke = Instance.new("UIStroke", btn)
+    stroke.Color = Color3.fromRGB(80, 80, 100)
+    return btn, stroke
+end
 
--- Bring/Teleport Button
-local BringBtn = Instance.new("TextButton", MainFrame)
-BringBtn.Size = UDim2.new(0.88, 0, 0, 38)
-BringBtn.Position = UDim2.new(0.06, 0, 0, 98)
-BringBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-BringBtn.Text = "🧲 TELEPORT GIVERS TO ME"
-BringBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-BringBtn.Font = Enum.Font.GothamBold
-BringBtn.TextSize = 11
-Instance.new("UICorner", BringBtn).CornerRadius = UDim.new(0, 8)
-local BringStroke = Instance.new("UIStroke", BringBtn)
-BringStroke.Color = Color3.fromRGB(80, 80, 100)
-
--- Noclip Toggle Button
-local NoclipBtn = Instance.new("TextButton", MainFrame)
-NoclipBtn.Size = UDim2.new(0.88, 0, 0, 38)
-NoclipBtn.Position = UDim2.new(0.06, 0, 0, 146)
-NoclipBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-NoclipBtn.Text = "👻 NOCLIP: OFF"
-NoclipBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
-NoclipBtn.Font = Enum.Font.GothamBold
-NoclipBtn.TextSize = 11
-Instance.new("UICorner", NoclipBtn).CornerRadius = UDim.new(0, 8)
-local NoclipStroke = Instance.new("UIStroke", NoclipBtn)
-NoclipStroke.Color = Color3.fromRGB(80, 80, 100)
-
--- Anti-Teleport Toggle Button
-local AntiTPBtn = Instance.new("TextButton", MainFrame)
-AntiTPBtn.Size = UDim2.new(0.88, 0, 0, 38)
-AntiTPBtn.Position = UDim2.new(0.06, 0, 0, 194)
-AntiTPBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-AntiTPBtn.Text = "🛡️ ANTI-TELEPORT: OFF"
-AntiTPBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
-AntiTPBtn.Font = Enum.Font.GothamBold
-AntiTPBtn.TextSize = 11
-Instance.new("UICorner", AntiTPBtn).CornerRadius = UDim.new(0, 8)
-local AntiTPStroke = Instance.new("UIStroke", AntiTPBtn)
-AntiTPStroke.Color = Color3.fromRGB(80, 80, 100)
+-- UI Buttons Creation
+local ESPBtn, ESPStroke = createButton("ESPBtn", "🍔 GIVERS ESP: OFF", 44)
+local NametagBtn, NametagStroke = createButton("NametagBtn", "🏷️ FOOD & MEGAFISH NAMETAGS: OFF", 84)
+local BringBtn, BringStroke = createButton("BringBtn", "🧲 TELEPORT GIVERS TO ME", 124)
+local NoclipBtn, NoclipStroke = createButton("NoclipBtn", "👻 NOCLIP: OFF", 164)
+local AntiTPBtn, AntiTPStroke = createButton("AntiTPBtn", "🛡️ ANTI-TELEPORT: OFF", 204)
+local FullbrightBtn, FullbrightStroke = createButton("FullbrightBtn", "💡 FULLBRIGHT: OFF", 244)
+local InfJumpBtn, InfJumpStroke = createButton("InfJumpBtn", "🦘 INFINITE JUMP: OFF", 284)
 
 -- Robust Givers folder finder
 local function getGiversFolders()
@@ -175,7 +150,13 @@ local function getGiversFolders()
     return folders
 end
 
--- ESP Logic
+-- Check if item is Nokia (to exclude)
+local function isNokia(item)
+    local name = item.Name:lower()
+    return name:find("nokia") ~= nil
+end
+
+-- ESP Logic (excluding Nokia)
 local giversESPEnabled = false
 ESPBtn.Activated:Connect(function()
     giversESPEnabled = not giversESPEnabled
@@ -191,7 +172,7 @@ task.spawn(function()
                 for _, folder in ipairs(getGiversFolders()) do
                     for _, category in ipairs(folder:GetChildren()) do
                         for _, item in ipairs(category:GetDescendants()) do
-                            if (item:IsA("BasePart") or item:IsA("Model")) and not item:FindFirstChild("GiverESP") then
+                            if (item:IsA("BasePart") or item:IsA("Model")) and not isNokia(item) and not item:FindFirstChild("GiverESP") then
                                 local hl = Instance.new("Highlight", item)
                                 hl.Name = "GiverESP"
                                 hl.FillColor = Color3.fromRGB(255, 200, 0)
@@ -218,7 +199,63 @@ task.spawn(function()
     end
 end)
 
--- Teleport to Me Logic
+-- Food & Megafish Nametags Logic
+local nametagsEnabled = false
+NametagBtn.Activated:Connect(function()
+    nametagsEnabled = not nametagsEnabled
+    NametagBtn.Text = nametagsEnabled and "🏷️ FOOD & MEGAFISH NAMETAGS: ON" or "🏷️ FOOD & MEGAFISH NAMETAGS: OFF"
+    NametagBtn.BackgroundColor3 = nametagsEnabled and Color3.fromRGB(220, 150, 0) or Color3.fromRGB(30, 30, 40)
+    NametagStroke.Color = nametagsEnabled and Color3.fromRGB(255, 200, 0) or Color3.fromRGB(80, 80, 100)
+end)
+
+local function isFoodOrFish(item)
+    local n = item.Name:lower()
+    return n:find("fish") or n:find("megafish") or n:find("food") or n:find("burger") or n:find("apple") or n:find("pizza") or n:find("meat") or n:find("drink") or n:find("water") or n:find("soda")
+end
+
+task.spawn(function()
+    while true do
+        if nametagsEnabled then
+            pcall(function()
+                for _, obj in ipairs(Workspace:GetDescendants()) do
+                    if (obj:IsA("BasePart") or obj:IsA("Model")) and not isNokia(obj) and isFoodOrFish(obj) then
+                        local targetPart = obj:IsA("Model") and (obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")) or obj
+                        if targetPart and not targetPart:FindFirstChild("FoodFishNametag") then
+                            local bg = Instance.new("BillboardGui", targetPart)
+                            bg.Name = "FoodFishNametag"
+                            bg.Size = UDim2.new(0, 120, 0, 40)
+                            bg.StudsOffset = Vector3.new(0, 2.5, 0)
+                            bg.AlwaysOnTop = true
+                            
+                            local lbl = Instance.new("TextLabel", bg)
+                            lbl.Size = UDim2.new(1, 0, 1, 0)
+                            lbl.BackgroundTransparency = 1
+                            lbl.Text = obj.Name
+                            lbl.TextColor3 = Color3.fromRGB(0, 255, 200)
+                            lbl.TextStrokeTransparency = 0
+                            lbl.Font = Enum.Font.GothamBold
+                            lbl.TextSize = 12
+                        end
+                    end
+                end
+            end)
+            task.wait(1)
+        else
+            pcall(function()
+                for _, obj in ipairs(Workspace:GetDescendants()) do
+                    local tag = obj:FindFirstChild("FoodFishNametag") or (obj:IsA("Model") and obj.PrimaryPart and obj.PrimaryPart:FindFirstChild("FoodFishNametag"))
+                    if tag then tag:Destroy() end
+                    for _, child in ipairs(obj:GetDescendants()) do
+                        if child.Name == "FoodFishNametag" then child:Destroy() end
+                    end
+                end
+            end)
+            task.wait(1)
+        end
+    end
+end)
+
+-- Teleport to Me Logic (excluding Nokia)
 BringBtn.Activated:Connect(function()
     pcall(function()
         local char = LocalPlayer.Character
@@ -229,16 +266,20 @@ BringBtn.Activated:Connect(function()
         for _, folder in ipairs(getGiversFolders()) do
             for _, category in ipairs(folder:GetChildren()) do
                 for _, item in ipairs(category:GetChildren()) do
-                    if item:IsA("BasePart") then
-                        item.CFrame = targetCFrame
-                    elseif item:IsA("Model") then
-                        item:PivotTo(targetCFrame)
-                    elseif item:IsA("Folder") then
-                        for _, subItem in ipairs(item:GetChildren()) do
-                            if subItem:IsA("BasePart") then
-                                subItem.CFrame = targetCFrame
-                            elseif subItem:IsA("Model") then
-                                subItem:PivotTo(targetCFrame)
+                    if not isNokia(item) then
+                        if item:IsA("BasePart") then
+                            item.CFrame = targetCFrame
+                        elseif item:IsA("Model") then
+                            item:PivotTo(targetCFrame)
+                        elseif item:IsA("Folder") then
+                            for _, subItem in ipairs(item:GetChildren()) do
+                                if not isNokia(subItem) then
+                                    if subItem:IsA("BasePart") then
+                                        subItem.CFrame = targetCFrame
+                                    elseif subItem:IsA("Model") then
+                                        subItem:PivotTo(targetCFrame)
+                                    end
+                                end
                             end
                         end
                     end
@@ -302,5 +343,42 @@ RunService.Heartbeat:Connect(function()
         end)
     else
         lastSafeCFrame = nil
+    end
+end)
+
+-- Fullbright Logic
+local fullbrightEnabled = false
+FullbrightBtn.Activated:Connect(function()
+    fullbrightEnabled = not fullbrightEnabled
+    FullbrightBtn.Text = fullbrightEnabled and "💡 FULLBRIGHT: ON" or "💡 FULLBRIGHT: OFF"
+    FullbrightBtn.BackgroundColor3 = fullbrightEnabled and Color3.fromRGB(220, 150, 0) or Color3.fromRGB(30, 30, 40)
+    FullbrightStroke.Color = fullbrightEnabled and Color3.fromRGB(255, 200, 0) or Color3.fromRGB(80, 80, 100)
+end)
+
+RunService.RenderStepped:Connect(function()
+    if fullbrightEnabled then
+        Lighting.Brightness = 2
+        Lighting.ClockTime = 14
+        Lighting.GlobalShadows = false
+        Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
+    end
+end)
+
+-- Infinite Jump Logic
+local infJumpEnabled = false
+InfJumpBtn.Activated:Connect(function()
+    infJumpEnabled = not infJumpEnabled
+    InfJumpBtn.Text = infJumpEnabled and "🦘 INFINITE JUMP: ON" or "🦘 INFINITE JUMP: OFF"
+    InfJumpBtn.BackgroundColor3 = infJumpEnabled and Color3.fromRGB(220, 150, 0) or Color3.fromRGB(30, 30, 40)
+    InfJumpStroke.Color = infJumpEnabled and Color3.fromRGB(255, 200, 0) or Color3.fromRGB(80, 80, 100)
+end)
+
+UserInputService.JumpRequest:Connect(function()
+    if infJumpEnabled then
+        local char = LocalPlayer.Character
+        local hum = char and char:FindFirstChildOfClass("Humanoid")
+        if hum then
+            hum:ChangeState(Enum.HumanoidStateType.Jumping)
+        end
     end
 end)
