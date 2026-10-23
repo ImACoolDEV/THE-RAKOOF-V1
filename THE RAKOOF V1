@@ -1,4 +1,7 @@
--- THE RAKOOF V1 - Givers ESP, Nametags, Teleports & Extras
+-- ========================================================
+-- THE RAKOOF V1 - OPTIMIZED TARGET NAMETAGS & EXTRAS
+-- ========================================================
+
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local CoreGui = game:GetService("CoreGui")
@@ -31,7 +34,7 @@ local ToggleStroke = Instance.new("UIStroke", ToggleBtn)
 ToggleStroke.Thickness = 2
 ToggleStroke.Color = Color3.fromRGB(255, 170, 0)
 
--- Main Frame (Expanded to fit new features)
+-- Main Frame
 local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 MainFrame.Size = UDim2.new(0, 370, 0, 370)
@@ -71,11 +74,11 @@ end
 
 makeDraggable(ToggleBtn, ToggleBtn)
 
--- Title Bar (Drag handle for Main Frame)
+-- Title Bar
 local TitleBar = Instance.new("TextLabel", MainFrame)
 TitleBar.Size = UDim2.new(1, 0, 0, 36)
 TitleBar.BackgroundColor3 = Color3.fromRGB(28, 28, 38)
-TitleBar.Text = "📦 RAKOOF HUB - GIVERS & EXTRAS"
+TitleBar.Text = "📦 RAKOOF HUB - OPTIMIZED"
 TitleBar.TextColor3 = Color3.fromRGB(255, 200, 50)
 TitleBar.Font = Enum.Font.GothamBold
 TitleBar.TextSize = 11
@@ -122,7 +125,7 @@ end
 
 -- UI Buttons Creation
 local ESPBtn, ESPStroke = createButton("ESPBtn", "🍔 GIVERS ESP: OFF", 44)
-local NametagBtn, NametagStroke = createButton("NametagBtn", "🏷️ FOOD & MEGAFISH NAMETAGS: OFF", 84)
+local TargetTagBtn, TargetTagStroke = createButton("TargetTagBtn", "🏷️ TARGET NAMETAGS (Chips/Jose/Ducks): OFF", 84)
 local BringBtn, BringStroke = createButton("BringBtn", "🧲 TELEPORT GIVERS TO ME", 124)
 local NoclipBtn, NoclipStroke = createButton("NoclipBtn", "👻 NOCLIP: OFF", 164)
 local AntiTPBtn, AntiTPStroke = createButton("AntiTPBtn", "🛡️ ANTI-TELEPORT: OFF", 204)
@@ -150,13 +153,11 @@ local function getGiversFolders()
     return folders
 end
 
--- Check if item is Nokia (to exclude)
 local function isNokia(item)
-    local name = item.Name:lower()
-    return name:find("nokia") ~= nil
+    return item.Name:lower():find("nokia") ~= nil
 end
 
--- ESP Logic (excluding Nokia)
+-- ESP Logic for Givers
 local giversESPEnabled = false
 ESPBtn.Activated:Connect(function()
     giversESPEnabled = not giversESPEnabled
@@ -182,7 +183,7 @@ task.spawn(function()
                     end
                 end
             end)
-            task.wait(1)
+            task.wait(1.5)
         else
             pcall(function()
                 for _, folder in ipairs(getGiversFolders()) do
@@ -194,64 +195,98 @@ task.spawn(function()
                     end
                 end
             end)
-            task.wait(1)
+            task.wait(1.5)
         end
     end
 end)
 
--- Food & Megafish Nametags Logic
-local nametagsEnabled = false
-NametagBtn.Activated:Connect(function()
-    nametagsEnabled = not nametagsEnabled
-    NametagBtn.Text = nametagsEnabled and "🏷️ FOOD & MEGAFISH NAMETAGS: ON" or "🏷️ FOOD & MEGAFISH NAMETAGS: OFF"
-    NametagBtn.BackgroundColor3 = nametagsEnabled and Color3.fromRGB(220, 150, 0) or Color3.fromRGB(30, 30, 40)
-    NametagStroke.Color = nametagsEnabled and Color3.fromRGB(255, 200, 0) or Color3.fromRGB(80, 80, 100)
-end)
+-- ========================================================
+-- ADVANCED OPTIMIZED TARGET NAMETAGS (Chips, Slushie, Burger, Coffee, Jose, Ducks)
+-- ========================================================
+local targetTagsEnabled = false
+local trackedNametags = {}
 
-local function isFoodOrFish(item)
-    local n = item.Name:lower()
-    return n:find("fish") or n:find("megafish") or n:find("food") or n:find("burger") or n:find("apple") or n:find("pizza") or n:find("meat") or n:find("drink") or n:find("water") or n:find("soda")
+local function isTargetItem(name)
+    name = name:lower()
+    return name:find("chip") or name:find("slushie") or name:find("burger") or name:find("coffee") or name:find("jose") or name:find("duck")
 end
 
-task.spawn(function()
-    while true do
-        if nametagsEnabled then
-            pcall(function()
-                for _, obj in ipairs(Workspace:GetDescendants()) do
-                    if (obj:IsA("BasePart") or obj:IsA("Model")) and not isNokia(obj) and isFoodOrFish(obj) then
-                        local targetPart = obj:IsA("Model") and (obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")) or obj
-                        if targetPart and not targetPart:FindFirstChild("FoodFishNametag") then
-                            local bg = Instance.new("BillboardGui", targetPart)
-                            bg.Name = "FoodFishNametag"
-                            bg.Size = UDim2.new(0, 120, 0, 40)
-                            bg.StudsOffset = Vector3.new(0, 2.5, 0)
-                            bg.AlwaysOnTop = true
-                            
-                            local lbl = Instance.new("TextLabel", bg)
-                            lbl.Size = UDim2.new(1, 0, 1, 0)
-                            lbl.BackgroundTransparency = 1
-                            lbl.Text = obj.Name
-                            lbl.TextColor3 = Color3.fromRGB(0, 255, 200)
-                            lbl.TextStrokeTransparency = 0
-                            lbl.Font = Enum.Font.GothamBold
-                            lbl.TextSize = 12
-                        end
-                    end
+local function attachNametag(obj)
+    if trackedNametags[obj] then return end
+    if not (obj:IsA("Model") or obj:IsA("BasePart")) then return end
+    if isNokia(obj) then return end
+    
+    if isTargetItem(obj.Name) then
+        local targetPart = obj:IsA("Model") and (obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")) or obj
+        if targetPart and not targetPart:FindFirstChild("OptimizedTargetTag") then
+            local bg = Instance.new("BillboardGui")
+            bg.Name = "OptimizedTargetTag"
+            bg.Size = UDim2.new(0, 120, 0, 40)
+            bg.StudsOffset = Vector3.new(0, 2.5, 0)
+            bg.AlwaysOnTop = true
+            bg.Parent = targetPart
+            
+            local lbl = Instance.new("TextLabel", bg)
+            lbl.Size = UDim2.new(1, 0, 1, 0)
+            lbl.BackgroundTransparency = 1
+            lbl.Text = "📌 " .. obj.Name
+            lbl.TextColor3 = Color3.fromRGB(0, 255, 200)
+            lbl.TextStrokeTransparency = 0
+            lbl.Font = Enum.Font.GothamBold
+            lbl.TextSize = 12
+            
+            trackedNametags[obj] = bg
+            
+            -- Instant removal when item is destroyed/picked up (Zero lag cleanup)
+            obj.Destroying:Connect(function()
+                if trackedNametags[obj] then
+                    trackedNametags[obj]:Destroy()
+                    trackedNametags[obj] = nil
                 end
             end)
-            task.wait(1)
-        else
-            pcall(function()
-                for _, obj in ipairs(Workspace:GetDescendants()) do
-                    local tag = obj:FindFirstChild("FoodFishNametag") or (obj:IsA("Model") and obj.PrimaryPart and obj.PrimaryPart:FindFirstChild("FoodFishNametag"))
-                    if tag then tag:Destroy() end
-                    for _, child in ipairs(obj:GetDescendants()) do
-                        if child.Name == "FoodFishNametag" then child:Destroy() end
-                    end
-                end
-            end)
-            task.wait(1)
         end
+    end
+end
+
+local descendantConnection = nil
+
+TargetTagBtn.Activated:Connect(function()
+    targetTagsEnabled = not targetTagsEnabled
+    TargetTagBtn.Text = targetTagsEnabled and "🏷️ TARGET NAMETAGS: ON" or "🏷️ TARGET NAMETAGS: OFF"
+    TargetTagBtn.BackgroundColor3 = targetTagsEnabled and Color3.fromRGB(220, 150, 0) or Color3.fromRGB(30, 30, 40)
+    TargetTagStroke.Color = targetTagsEnabled and Color3.fromRGB(255, 200, 0) or Color3.fromRGB(80, 80, 100)
+    
+    if targetTagsEnabled then
+        -- Initial scan (optimized chunk)
+        task.spawn(function()
+            for _, obj in ipairs(Workspace:GetDescendants()) do
+                if targetTagsEnabled then
+                    attachNametag(obj)
+                else
+                    break
+                end
+            end
+        end)
+        
+        -- Listen live for spawned target items instantly without laggy loops
+        descendantConnection = Workspace.DescendantAdded:Connect(function(obj)
+            if targetTagsEnabled then
+                task.spawn(function()
+                    task.wait(0.1) -- small buffer for model loading
+                    attachNametag(obj)
+                end)
+            end
+        end)
+    else
+        if descendantConnection then
+            descendantConnection:Disconnect()
+            descendantConnection = nil
+        end
+        -- Clear all existing active tags instantly
+        for obj, gui in pairs(trackedNametags) do
+            if gui then gui:Destroy() end
+        end
+        trackedNametags = {}
     end
 end)
 
