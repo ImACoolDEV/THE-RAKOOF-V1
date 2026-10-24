@@ -1,5 +1,5 @@
 -- ========================================================
--- THE RAKOOF V1 - OPTIMIZED TARGET NAMETAGS & EXTRAS
+-- THE RAKOOF V1 - GIVERS, SCRAP NAMETAGS, LOOT ESP & EXTRAS
 -- ========================================================
 
 local Players = game:GetService("Players")
@@ -34,10 +34,10 @@ local ToggleStroke = Instance.new("UIStroke", ToggleBtn)
 ToggleStroke.Thickness = 2
 ToggleStroke.Color = Color3.fromRGB(255, 170, 0)
 
--- Main Frame
+-- Main Frame (Expanded to fit new features)
 local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-MainFrame.Size = UDim2.new(0, 370, 0, 370)
+MainFrame.Size = UDim2.new(0, 370, 0, 410)
 MainFrame.Position = UDim2.new(0.5, 0, 0.4, 0)
 MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
 MainFrame.Active = false
@@ -74,11 +74,11 @@ end
 
 makeDraggable(ToggleBtn, ToggleBtn)
 
--- Title Bar
+-- Title Bar (Drag handle for Main Frame)
 local TitleBar = Instance.new("TextLabel", MainFrame)
 TitleBar.Size = UDim2.new(1, 0, 0, 36)
 TitleBar.BackgroundColor3 = Color3.fromRGB(28, 28, 38)
-TitleBar.Text = "📦 RAKOOF HUB - OPTIMIZED"
+TitleBar.Text = "📦 RAKOOF HUB - SCRAP & EXTRAS"
 TitleBar.TextColor3 = Color3.fromRGB(255, 200, 50)
 TitleBar.Font = Enum.Font.GothamBold
 TitleBar.TextSize = 11
@@ -125,12 +125,13 @@ end
 
 -- UI Buttons Creation
 local ESPBtn, ESPStroke = createButton("ESPBtn", "🍔 GIVERS ESP: OFF", 44)
-local TargetTagBtn, TargetTagStroke = createButton("TargetTagBtn", "🏷️ TARGET NAMETAGS (Chips/Jose/Ducks): OFF", 84)
-local BringBtn, BringStroke = createButton("BringBtn", "🧲 TELEPORT GIVERS TO ME", 124)
-local NoclipBtn, NoclipStroke = createButton("NoclipBtn", "👻 NOCLIP: OFF", 164)
-local AntiTPBtn, AntiTPStroke = createButton("AntiTPBtn", "🛡️ ANTI-TELEPORT: OFF", 204)
-local FullbrightBtn, FullbrightStroke = createButton("FullbrightBtn", "💡 FULLBRIGHT: OFF", 244)
-local InfJumpBtn, InfJumpStroke = createButton("InfJumpBtn", "🦘 INFINITE JUMP: OFF", 284)
+local ScrapTagBtn, ScrapTagStroke = createButton("ScrapTagBtn", "🏷️ SCRAP NAMETAGS (High/Med/Small): OFF", 84)
+local LootESPBtn, LootESPStroke = createButton("LootESPBtn", "📦 LOOT ESP: OFF", 124)
+local BringBtn, BringStroke = createButton("BringBtn", "🧲 TELEPORT GIVERS TO ME", 164)
+local NoclipBtn, NoclipStroke = createButton("NoclipBtn", "👻 NOCLIP: OFF", 204)
+local AntiTPBtn, AntiTPStroke = createButton("AntiTPBtn", "🛡️ ANTI-TELEPORT: OFF", 244)
+local FullbrightBtn, FullbrightStroke = createButton("FullbrightBtn", "💡 FULLBRIGHT: OFF", 284)
+local InfJumpBtn, InfJumpStroke = createButton("InfJumpBtn", "🦘 INFINITE JUMP: OFF", 324)
 
 -- Robust Givers folder finder
 local function getGiversFolders()
@@ -154,7 +155,8 @@ local function getGiversFolders()
 end
 
 local function isNokia(item)
-    return item.Name:lower():find("nokia") ~= nil
+    local name = item.Name:lower()
+    return name:find("nokia") ~= nil
 end
 
 -- ESP Logic for Givers
@@ -201,92 +203,130 @@ task.spawn(function()
 end)
 
 -- ========================================================
--- ADVANCED OPTIMIZED TARGET NAMETAGS (Chips, Slushie, Burger, Coffee, Jose, Ducks)
+-- SCRAP METAL NAMETAGS LOGIC (High, Medium, Small ONLY)
 -- ========================================================
-local targetTagsEnabled = false
-local trackedNametags = {}
+local scrapTagsEnabled = false
+local trackedScrapTags = {}
 
-local function isTargetItem(name)
+local function isScrapMetalItem(name)
     name = name:lower()
-    return name:find("chip") or name:find("slushie") or name:find("burger") or name:find("coffee") or name:find("jose") or name:find("duck")
+    return name == "high" or name == "medium" or name == "small"
 end
 
-local function attachNametag(obj)
-    if trackedNametags[obj] then return end
+local function attachScrapNametag(obj)
+    if trackedScrapTags[obj] then return end
     if not (obj:IsA("Model") or obj:IsA("BasePart")) then return end
-    if isNokia(obj) then return end
     
-    if isTargetItem(obj.Name) then
+    if isScrapMetalItem(obj.Name) then
         local targetPart = obj:IsA("Model") and (obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")) or obj
-        if targetPart and not targetPart:FindFirstChild("OptimizedTargetTag") then
+        if targetPart and not targetPart:FindFirstChild("ScrapMetalTag") then
             local bg = Instance.new("BillboardGui")
-            bg.Name = "OptimizedTargetTag"
-            bg.Size = UDim2.new(0, 120, 0, 40)
-            bg.StudsOffset = Vector3.new(0, 2.5, 0)
+            bg.Name = "ScrapMetalTag"
+            bg.Size = UDim2.new(0, 100, 0, 35)
+            bg.StudsOffset = Vector3.new(0, 2, 0)
             bg.AlwaysOnTop = true
             bg.Parent = targetPart
             
             local lbl = Instance.new("TextLabel", bg)
             lbl.Size = UDim2.new(1, 0, 1, 0)
             lbl.BackgroundTransparency = 1
-            lbl.Text = "📌 " .. obj.Name
-            lbl.TextColor3 = Color3.fromRGB(0, 255, 200)
+            lbl.Text = "⚙️ " .. obj.Name .. " Scrap"
+            lbl.TextColor3 = Color3.fromRGB(255, 200, 0)
             lbl.TextStrokeTransparency = 0
             lbl.Font = Enum.Font.GothamBold
-            lbl.TextSize = 12
+            lbl.TextSize = 11
             
-            trackedNametags[obj] = bg
+            trackedScrapTags[obj] = bg
             
-            -- Instant removal when item is destroyed/picked up (Zero lag cleanup)
+            -- Disappear immediately when scrap is gone/destroyed
             obj.Destroying:Connect(function()
-                if trackedNametags[obj] then
-                    trackedNametags[obj]:Destroy()
-                    trackedNametags[obj] = nil
+                if trackedScrapTags[obj] then
+                    trackedScrapTags[obj]:Destroy()
+                    trackedScrapTags[obj] = nil
                 end
             end)
         end
     end
 end
 
-local descendantConnection = nil
+local scrapDescendantConn = nil
 
-TargetTagBtn.Activated:Connect(function()
-    targetTagsEnabled = not targetTagsEnabled
-    TargetTagBtn.Text = targetTagsEnabled and "🏷️ TARGET NAMETAGS: ON" or "🏷️ TARGET NAMETAGS: OFF"
-    TargetTagBtn.BackgroundColor3 = targetTagsEnabled and Color3.fromRGB(220, 150, 0) or Color3.fromRGB(30, 30, 40)
-    TargetTagStroke.Color = targetTagsEnabled and Color3.fromRGB(255, 200, 0) or Color3.fromRGB(80, 80, 100)
+ScrapTagBtn.Activated:Connect(function()
+    scrapTagsEnabled = not scrapTagsEnabled
+    ScrapTagBtn.Text = scrapTagsEnabled and "🏷️ SCRAP NAMETAGS: ON" or "🏷️ SCRAP NAMETAGS: OFF"
+    ScrapTagBtn.BackgroundColor3 = scrapTagsEnabled and Color3.fromRGB(220, 150, 0) or Color3.fromRGB(30, 30, 40)
+    ScrapTagStroke.Color = scrapTagsEnabled and Color3.fromRGB(255, 200, 0) or Color3.fromRGB(80, 80, 100)
     
-    if targetTagsEnabled then
-        -- Initial scan (optimized chunk)
+    if scrapTagsEnabled then
         task.spawn(function()
             for _, obj in ipairs(Workspace:GetDescendants()) do
-                if targetTagsEnabled then
-                    attachNametag(obj)
+                if scrapTagsEnabled then
+                    attachScrapNametag(obj)
                 else
                     break
                 end
             end
         end)
         
-        -- Listen live for spawned target items instantly without laggy loops
-        descendantConnection = Workspace.DescendantAdded:Connect(function(obj)
-            if targetTagsEnabled then
+        scrapDescendantConn = Workspace.DescendantAdded:Connect(function(obj)
+            if scrapTagsEnabled then
                 task.spawn(function()
-                    task.wait(0.1) -- small buffer for model loading
-                    attachNametag(obj)
+                    task.wait(0.1)
+                    attachScrapNametag(obj)
                 end)
             end
         end)
     else
-        if descendantConnection then
-            descendantConnection:Disconnect()
-            descendantConnection = nil
+        if scrapDescendantConn then
+            scrapDescendantConn:Disconnect()
+            scrapDescendantConn = nil
         end
-        -- Clear all existing active tags instantly
-        for obj, gui in pairs(trackedNametags) do
+        for obj, gui in pairs(trackedScrapTags) do
             if gui then gui:Destroy() end
         end
-        trackedNametags = {}
+        trackedScrapTags = {}
+    end
+end)
+
+-- ========================================================
+-- LOOT ESP LOGIC
+-- ========================================================
+local lootESPEnabled = false
+LootESPBtn.Activated:Connect(function()
+    lootESPEnabled = not lootESPEnabled
+    LootESPBtn.Text = lootESPEnabled and "📦 LOOT ESP: ON" or "📦 LOOT ESP: OFF"
+    LootESPBtn.BackgroundColor3 = lootESPEnabled and Color3.fromRGB(220, 150, 0) or Color3.fromRGB(30, 30, 40)
+    LootESPStroke.Color = lootESPEnabled and Color3.fromRGB(255, 200, 0) or Color3.fromRGB(80, 80, 100)
+end)
+
+task.spawn(function()
+    while true do
+        if lootESPEnabled then
+            pcall(function()
+                for _, obj in ipairs(Workspace:GetDescendants()) do
+                    if obj:IsA("Model") or obj:IsA("BasePart") then
+                        local nameLower = obj.Name:lower()
+                        if nameLower:find("loot") or nameLower:find("drop") or nameLower:find("item") or nameLower:find("battery") or nameLower:find("fuel") or nameLower:find("can") then
+                            if not obj:FindFirstChild("LootHighlight") then
+                                local hl = Instance.new("Highlight", obj)
+                                hl.Name = "LootHighlight"
+                                hl.FillColor = Color3.fromRGB(0, 200, 255)
+                                hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+                            end
+                        end
+                    end
+                end
+            end)
+            task.wait(2)
+        else
+            pcall(function()
+                for _, obj in ipairs(Workspace:GetDescendants()) do
+                    local hl = obj:FindFirstChild("LootHighlight")
+                    if hl then hl:Destroy() end
+                end
+            end)
+            task.wait(2)
+        end
     end
 end)
 
